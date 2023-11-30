@@ -9,6 +9,17 @@ import string
 # Position in the list is equivalent to the priority (modulo 1)
 pri_val_list = string.ascii_lowercase + string.ascii_uppercase
 
+# ctrl-backspace - delete a word backwards
+def make_priority_dict():
+    out = {}
+    for i, c in enumerate(string.ascii_lowercase + string.ascii_uppercase):
+        out[c] = i # if needed, add: + 1
+    return out
+
+# or use a dict comprehension:
+# PRI_VAL_LIST = {k:v for <...> in <...>}
+# PRI_VAL_LIST = {c:i for i,c in enumerate(string.ascii_lowercase + string.ascii_uppercase)}
+
 
 # Input is a list of strings
 # Find the duplicate character between all the sets
@@ -27,6 +38,16 @@ def find_dup(input_sets):
     input_sets.append(dup_items)
     return find_dup(input_sets)
 
+def find_dup2(input_lists):
+    # first = set(input_lists[0])
+    # rest = [set(x) for x in input_lists[1:]]
+    (first, *rest) = [set(x) for x in input_lists]
+    
+    for other in rest:
+        first = first.intersection(other)
+    assert len(first) == 1
+    return first.pop()
+
 
 # Split a rucksack string into two equal lists
 def split_rucksack(rucksack):
@@ -34,7 +55,13 @@ def split_rucksack(rucksack):
     rs_l = rucksack[:rs_compartment_len]
     rs_r = rucksack[rs_compartment_len:]
 
-    return [rs_l, rs_r]
+    return [rs_l, rs_r]  # returns a list
+    # return rs_l, rs_r  # returns a tuple
+
+# Jenny - you forgot to replace with split_list with chunk of 2
+
+# ("foo", 3)
+# ["foo", 3]
 
 
 # Return the priority of an item based on its position in the dictionary
