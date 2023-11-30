@@ -3,6 +3,19 @@ import lib
 use_example = False
 input_text = lib.read_input(__file__, use_example)
 
+"""
+INPUT_TO_INT = {
+    "A" : 1
+    "X" : 1
+    "B" " 2
+    "Y" = 2
+    "C" = 3
+    "Z" = 3
+}
+
+INPUT_TO_INT[thr]
+"""
+
 
 # Convert letter inputs to something I can math with
 def input_to_int(thr):
