@@ -1,6 +1,7 @@
 import lib
 
-input_text = lib.read_input(__file__, True)
+use_example = True
+input_text = lib.read_input(__file__, use_example)
 
 """
 # Girts solution
