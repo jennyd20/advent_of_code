@@ -1,7 +1,19 @@
 import lib
 
 use_example = False
-input_text = lib.read_input(__file__, use_example)
+
+"""
+INPUT_TO_INT = {
+    "A" : 1,
+    "X" : 1,
+    "B" : 2,
+    "Y" : 2,
+    "C" : 3,
+    "Z" : 3,
+}
+
+INPUT_TO_INT[thr]
+"""
 
 
 # Convert letter inputs to something I can math with
@@ -79,12 +91,14 @@ def score_match_from_result(match):
     return score_throw(op_throw, my_throw)
 
 
-guide = input_text.splitlines()
+if __name__ == "__main__":
+    input_text = lib.read_input(__file__, use_example)
+    guide = input_text.splitlines()
 
-# Part 1
-# answer = sum(score_match_throw(match) for match in guide)
+    # Part 1
+    answer = sum(score_match_from_throw(match) for match in guide)
 
-# Part 2
-answer = sum(score_match_from_result(match) for match in guide)
+    # Part 2
+    # answer = sum(score_match_from_result(match) for match in guide)
 
-print(("*** USING EXAMPLE ***: " if use_example else "") + str(answer))
+    print(("*** USING EXAMPLE ***: " if use_example else "") + str(answer))

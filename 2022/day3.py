@@ -10,6 +10,20 @@ import string
 pri_val_list = string.ascii_lowercase + string.ascii_uppercase
 
 
+# ctrl-backspace - delete a word backwards
+# Girts - programmically generate the dictionary
+def make_priority_dict():
+    out = {}
+    for i, c in enumerate(string.ascii_lowercase + string.ascii_uppercase):
+        out[c] = i  # if needed, add: + 1
+    return out
+
+
+# or use a dict comprehension:
+# PRI_VAL_LIST = {k:v for <...> in <...>}
+# PRI_VAL_LIST = {c:i for i,c in enumerate(string.ascii_lowercase + string.ascii_uppercase)}
+
+
 # Input is a list of strings
 # Find the duplicate character between all the sets
 # Compare the first list with the next list in the sets, then recursively return the new duplicate set with the remaining lists to check
@@ -28,13 +42,33 @@ def find_dup(input_sets):
     return find_dup(input_sets)
 
 
+# Girts more python-y rewrite
+def find_dup2(input_lists):
+    # first = set(input_lists[0])
+    # rest = [set(x) for x in input_lists[1:]]
+    (first, *rest) = [set(x) for x in input_lists]
+
+    for other in rest:
+        first = first.intersection(other)
+    assert len(first) == 1
+    return first.pop()
+
+
 # Split a rucksack string into two equal lists
+# Jenny - you forgot to replace with split_list with chunk of 2.  This can be deprecated.
 def split_rucksack(rucksack):
     rs_compartment_len = len(rucksack) // 2
     rs_l = rucksack[:rs_compartment_len]
     rs_r = rucksack[rs_compartment_len:]
 
-    return [rs_l, rs_r]
+    return [rs_l, rs_r]  # returns a list
+    # return rs_l, rs_r  # returns a tuple
+
+
+
+
+# ("foo", 3)  --> tuple
+# ["foo", 3]  --> list
 
 
 # Return the priority of an item based on its position in the dictionary
@@ -47,7 +81,10 @@ def get_priority(dup):
 rucksacks = input_text.splitlines()
 
 # Part 1
-# answer = sum(get_priority(find_dup(split_rucksack(rucksack))) for rucksack in rucksacks)
+#answer = sum(get_priority(find_dup(split_rucksack(rucksack))) for rucksack in rucksacks)
+
+# Part 1, with G changes
+#answer = sum(get_priority(find_dup2(lib.split_list(rucksack, len(rucksack) // 2))) for rucksack in rucksacks)
 
 
 # Part 2
