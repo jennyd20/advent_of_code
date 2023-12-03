@@ -83,7 +83,7 @@ rucksacks = input_text.splitlines()
 # Part 1
 #answer = sum(get_priority(find_dup(split_rucksack(rucksack))) for rucksack in rucksacks)
 
-# Part 1, with G changes
+# Part 1, with G changes - using find_dup2 instead of my original
 #answer = sum(get_priority(find_dup2(lib.split_list(rucksack, len(rucksack) // 2))) for rucksack in rucksacks)
 
 
