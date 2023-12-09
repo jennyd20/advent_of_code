@@ -11,3 +11,8 @@ def read_input(orig_p, is_ex=False):
     input_p = Path(src_p.parent / "input" / input_name)
 
     return input_p.read_text()
+
+
+# Divide a list into chunks of a discrete length
+def split_list(lst, chunk_size):
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
