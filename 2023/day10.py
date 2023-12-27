@@ -1,10 +1,9 @@
 import lib
 
 
-# Types
+# Types - not the start tile is considered a pipe
 GROUND = 7
-START = 8  # TODO unneeded?
-PIPE = 9
+PIPE = 8
 
 # Directions (also, indices into directional lists)
 NORTH = 0
@@ -23,12 +22,11 @@ class Tile:
 
         self.type = None
         self.exits = [False, False, False, False]
-        self.in_loop = False
+        self.on_loop = False
+        self.entry_dir = None
 
         if symbol == ".":
             self.type = GROUND
-        elif symbol == "S":
-            self.type = START
         else:
             self.type = PIPE
 
@@ -60,6 +58,9 @@ class Tile:
                 case "F":
                     self.exits[SOUTH] = True
                     self.exits[EAST] = True
+                case "S":
+                    # We will eventually know what the exits to the start symbol are
+                    pass
                 case _:
                     raise ValueError("Invalid pipe symbol")
 
@@ -76,7 +77,7 @@ def get_map_and_start(input_text):
             added_tile = Tile(symbol, x, y)
             # For the start, we want to know where it is and mark it as part of the loop
             if symbol == "S":
-                added_tile.in_loop = True
+                added_tile.on_loop = True
                 start_tile = added_tile
             tile_line.append(added_tile)
         map.append(tile_line)
@@ -99,27 +100,53 @@ def find_loop(map, start_tile):
     loop_tile = None
     entry_dir = None
 
+    # From the start tile, find all adjacent tiles and check to see if they go into the start.
     # Index corresponds to direction - [north, south, east, west]
+    possible_exits = []
     for dir in range(4):
-        orthogonal_tile = get_tile_in_dir(map, start_tile, dir)
-        opposite_dir = get_opposite_dir(dir)
+        if orthogonal_tile := get_tile_in_dir(map, start_tile, dir):
+            opposite_dir = get_opposite_dir(dir)
 
-        # TODO - other non-attached pipes can be pointed at the start, account for this case.
-        if orthogonal_tile.exits[opposite_dir]:
-            orthogonal_tile.in_loop = True
-            orthogonal_tile.exits[opposite_dir] = False
-            entry_dir = dir
-            loop_tile = orthogonal_tile
-            break
-    assert loop_tile, f"No next tile from {orthogonal_tile}"
+            if orthogonal_tile.exits[opposite_dir]:
+                orthogonal_tile.entry_dir = dir
+                possible_exits.append(orthogonal_tile)
 
+    # Critical failure - can't make a loop from the start tile
+    assert (
+        not len(possible_exits) < 2
+    ), f"Not enough exits from start tile: {possible_exits}"
+
+    # TODO - other non-attached pipes can be pointed at the start tile, account for this case.
+    assert (
+        not len(possible_exits) > 2
+    ), f"Many exits from the start tile: {possible_exits}.  Implement this case."
+
+    first_in_loop, last_in_loop = possible_exits
+
+    # Update the start tile to look like a regular pipe tile
+    start_tile.exits[first_in_loop.entry_dir] = True
+    start_tile.exits[last_in_loop.entry_dir] = True
+
+    # TODO: Programmatically find start tile shape, but just hard code it for now
+    start_tile.symbol = "F"
+
+    # Mark the entry direction as false, so there is only one exit from this tile to the next in the loop
+    first_in_loop.exits[get_opposite_dir(first_in_loop.entry_dir)] = False
+    loop_tile = first_in_loop
+    entry_dir = first_in_loop.entry_dir
+
+    # Loop until we're back to the start tile (which starts in the loop_tiles list)
     while not loop_tile in loop_tiles:
-        loop_tile.in_loop = True
+        # Add this tile to the list
+        loop_tile.on_loop = True
         loop_tiles.add(loop_tile)
 
+        # Mark the direction we came from as no longer an exit
         opposite_dir = get_opposite_dir(entry_dir)
         loop_tile.exits[opposite_dir] = False
+        # Get the direction that's the (only) valid exit
         entry_dir = loop_tile.exits.index(True)
+        # Get the next tile in the valid direction and continue with that one
         loop_tile = get_tile_in_dir(map, loop_tile, entry_dir)
         assert loop_tile, f"No next tile from direction {entry_dir}"
 
@@ -133,7 +160,55 @@ def find_answer(map, start_tile):
         return len(loop_tiles) // 2
 
     # Part 2 - Find the area enclosed by the loop
-    return 0
+    total_inside_tiles = 0
+    for row in map:
+        inside_tile_count = 0
+        inside = False
+        horiz_section_start_dir = None
+        for col_tile in row:
+            # If we are on the loop, we won't be adding anything to the total
+            if col_tile.on_loop:
+                # Check if we are entering, on, or leaving the loop
+                if col_tile.symbol == "|":
+                    # Just crossing a boundary, swap inside/outside
+                    inside = not inside
+                elif col_tile.symbol in ("F", "L"):
+                    # Entering a horizontal section, keep track of which direction we're coming in from.
+                    # Swap inside/outside at the beginning of the horizontal section
+                    horiz_section_start_dir = col_tile.symbol
+                    inside = not inside
+                elif col_tile.symbol == "-":
+                    # Do nothing if we are continuing along the horizontal path
+                    pass
+                else:
+                    # Still on the loop
+                    # We are leaving the horizontal section
+                    if col_tile.symbol == "|":
+                        # Simple boundary crossing, swap inside/outside
+                        inside = not inside
+                    elif (
+                        # If we started from south and end in up, we're in the opposite section of the map
+                        horiz_section_start_dir in ("F", "|")
+                        and col_tile.symbol == "J"
+                    ) or (
+                        horiz_section_start_dir in ("L", "|") and col_tile.symbol == "7"
+                    ):
+                        # Note that we already switched inside/outside at the beginning of the horizontal section, don't need to do it again
+                        pass
+                    else:
+                        # Swap inside/outside back, since we swapped at the beginning of the horizontal section and need to go back to what it was before entering
+                        inside = not inside
+            # This is not a loop tile
+            else:
+                # If this tile is inside the loop, add to the count.  Otherwise, don't count it.
+                if inside:
+                    inside_tile_count += 1
+
+        # Completed a row of the map
+        total_inside_tiles += inside_tile_count
+
+    # All rows have been processed
+    return total_inside_tiles
 
 
 def get_tile_in_dir(map, start_tile, dir):
@@ -165,10 +240,10 @@ def get_opposite_dir(dir):
 
 
 ### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###
-use_example = True
+use_example = False
 part1 = False
 alt_input = None
-# alt_input = "day10_ex2.txt"
+# alt_input = "day10_ex8.txt"
 
 # Execute the script
 if __name__ == "__main__":
