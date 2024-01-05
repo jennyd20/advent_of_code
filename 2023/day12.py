@@ -7,8 +7,11 @@ def print_record_at_index(record, enums, idx, in_group):
     print((" " * max(0, idx - 1)) + ("^") + (" " * (len(record) - idx)) + "\n")
 
 
-def get_num_options(record, enums, idx=0, in_group=False):
-    print_record_at_index(record, enums, idx, in_group)
+def get_num_options(record, enums, cache, idx=0, in_group=False):
+    # print_record_at_index(record, enums, idx, in_group)
+    key = (tuple(enums), idx, in_group)
+    if key in cache:
+        return cache[key]
 
     # Return case - we're at the end of the record line
     if idx == len(record):
@@ -19,6 +22,23 @@ def get_num_options(record, enums, idx=0, in_group=False):
             # If there are still enumerations remaining or the last enumeration isn't zero, this isn't a valid case
             return 0
 
+    sum = 0
+
+    # Can we do "#" at idx?
+    if enums and enums[0] > 0 and record[idx] in {"#", "?"}:
+        new_enums = [(enums[0] - 1)] + enums[1:]
+        sum += get_num_options(record, new_enums, cache, idx + 1, True)
+
+    # Can we do "." at idx?
+    if record[idx] in {".", "?"} and (not in_group or enums[0] == 0):
+        if in_group:
+            enums = enums[1:]
+        sum += get_num_options(record, enums, cache, idx + 1, False)
+
+    cache[key] = sum
+    return sum
+
+    """
     # We haven't made it to the end of the string yet, do more work
     # If the enum we're checking is equal to 0
     # if enums and enums[0] == 0:  # was before
@@ -69,22 +89,13 @@ def get_num_options(record, enums, idx=0, in_group=False):
                 return sum
 
     raise ValueError("Something has went horribly wrong and no cases have been matched")
-
-
-def decrement_enum(enums):
-    if not enums:  # girts
-        pass
-    new_enums = []
-    if enums:
-        new_enums = enums[:]
-        new_enums[0] -= 1
-    return new_enums
+"""
 
 
 ### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###
-use_example = False # True
-part1 = True
-custom = None # "day12_tests.txt"
+use_example = False  # True
+part2 = True
+custom = None  # "day12_tests.txt"
 
 # Execute the scriptl
 if __name__ == "__main__":
@@ -94,14 +105,14 @@ if __name__ == "__main__":
     for row in input_text.splitlines():
         record, enums = row.split(" ")
         enums = [int(x) for x in enums.split(",")]
-        num_arrangements = get_num_options(record, enums)
+        cache = {}
+
+        if part2:
+            record = "?".join([record] * 5)
+            enums = enums * 5
+
+        num_arrangements = get_num_options(record, enums, cache)
         print(f"{num_arrangements=} for {record=} with {enums=}")
         answer += num_arrangements
 
     print(answer)
-
-
-'''
-num_arrangements=1 for record='#.?????#.#????#' with enums=[1, 4, 6]
-num_arrangements=1 for record='..#?#??#?????#??' with enums=[4, 9]
-'''
