@@ -77,10 +77,9 @@ def rotate_and_tilt(platform):
                 tipped_col += "#"
                 rocks_in_group = 0
                 ground_in_group = 0
-        else:
-            # When we reach the end of the column, make sure to add any extra rolled rocks
-            tipped_col += "." * ground_in_group
-            tipped_col += "O" * rocks_in_group
+        # When we reach the end of the column, make sure to add any extra rolled rocks
+        tipped_col += "." * ground_in_group
+        tipped_col += "O" * rocks_in_group
 
         new_platform.append(tipped_col)
     return new_platform
