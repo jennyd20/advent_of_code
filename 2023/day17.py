@@ -29,38 +29,34 @@ class Tile_State:
 
     # Return a set of possible valid tiles that can be reached from this one.
     def get_next_tstates(self, tstate_heat_dict, input_map):
-        # print(f"Processing: {self}")
-        # print(f"Current value: {tstate_heat_dict[self]}")
         get_exit_tstates = self.get_exits(input_map)
 
         # Process next_tiles
         next_tstates = []
         for tstate in get_exit_tstates:
-            # print(f"Checking: {tstate}")
             new_tstate_heat = tstate_heat_dict[self] + input_map[tstate.x][tstate.y]
             if tstate not in tstate_heat_dict:
-                # print(f"Not in dictionary, updating heat to: {new_tstate_heat}")
                 tstate_heat_dict[tstate] = new_tstate_heat
                 next_tstates.append(tstate)
             else:
                 previous_tstate_heat = tstate_heat_dict[tstate]
-                # print(f"State in dictionary, new state: {new_tstate_heat}; previous heat: {previous_tstate_heat}")
                 if new_tstate_heat < previous_tstate_heat:
-                    # print(f"Updating dictionary state")
                     tstate_heat_dict[tstate] = new_tstate_heat
                     next_tstates.append(tstate)
 
-        # print(f"Returning next states: {next_tstates}")
-        # print()
         return next_tstates
 
     def get_exits(self, map):
         exits = DIR.copy()
         del exits[self.entry_dir]
+        opposite_dir = get_opposite_dir(self.entry_dir)
 
-        # Remove opposite direction if not within the sequence range
+        # If we haven't gone far enough, you can only go straight
+        if self.str_dist < STRAIGHT_DISTANCE_MIN:
+            exits = {opposite_dir: DIR[opposite_dir]}
+        # If we're about to go too far, eliminate the opposite direction
         if self.str_dist >= STRAIGHT_DISTANCE_MAX:
-            del exits[get_opposite_dir(self.entry_dir)]
+            del exits[opposite_dir]
 
         possible_next_tiles = set()
         for exit in exits:
@@ -86,7 +82,12 @@ class Tile_State:
         return 0 <= self.x < len(input_map) and 0 <= self.y < len(input_map[0])
 
     def is_exit(self, input_map):
-        return self.x == len(input_map) - 1 and self.y == len(input_map[0]) - 1
+        if part2 and self.str_dist < STRAIGHT_DISTANCE_MIN:
+            return False
+        return (
+            self.x == len(input_map) - 1
+            and self.y == len(input_map[0]) - 1
+        )
 
 
 ############ END CLASS DEFINITIONS ############
@@ -98,10 +99,12 @@ def least_heat_loss(input_list):
     tstate_heat_dict = {}
 
     # (x, y, entry direction, current heat from this path to this location)
-    initial_tstate = Tile_State(0, 0, "w", 0)
-    tstate_heat_dict[initial_tstate] = 0
+    initial_tstate_w = Tile_State(0, 0, "w", 0)
+    initial_tstate_n = Tile_State(0, 0, "n", 0)
+    tstate_heat_dict[initial_tstate_w] = 0
+    tstate_heat_dict[initial_tstate_n] = 0
 
-    tstate_queue = {initial_tstate}
+    tstate_queue = {initial_tstate_w, initial_tstate_n}
 
     # Keep a running total of the minum loss to the exit, cull any paths that are greater than that
     min_heat_loss = 2**32
@@ -130,10 +133,10 @@ def create_map(input_list):
 
 ########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
 use_example = False
-part2 = False
-file = ""  # day17_ex2.txt"
+part2 = True
+file = ""#"day17_ex2.txt"
 
-STRAIGHT_DISTANCE_MIN = 4 if part2 else 1
+STRAIGHT_DISTANCE_MIN = 4 if part2 else 0
 STRAIGHT_DISTANCE_MAX = 10 if part2 else 3
 
 # Execute the script
