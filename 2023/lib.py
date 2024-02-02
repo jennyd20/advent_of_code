@@ -7,7 +7,24 @@ def read_input(orig_p, is_ex=False, alt_input=""):
     src_p = Path(orig_p)
     src_name = src_p.stem
     assert src_name.startswith("day"), "Can only read input on dayX files"
-    input_name = alt_input if alt_input else src_name + ("_ex" if is_ex else "_input") + ".txt"
+    input_name = (
+        alt_input if alt_input else src_name + ("_ex" if is_ex else "_input") + ".txt"
+    )
+    input_p = Path(src_p.parent / "input" / input_name)
+
+    return input_p.read_text()
+
+
+# Same thing, but see if the ex is true, false, or a string
+def read_input2(orig_p, example_or_other: (str | bool)=False):
+    src_p = Path(orig_p)
+    src_name = src_p.stem
+
+    input_name = (
+        example_or_other
+        if type(example_or_other) == str
+        else src_name + ("_ex" if example_or_other else "_input") + ".txt"
+    )
     input_p = Path(src_p.parent / "input" / input_name)
 
     return input_p.read_text()
