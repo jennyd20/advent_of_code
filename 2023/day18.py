@@ -1,8 +1,8 @@
 import lib
 
 
-def process_input(input_text):
-    plan = get_plan_from_input(input_text)
+def process_input(input_text, part2=False):
+    plan = get_plan_from_input(input_text, part2)
     corner_list = get_corner_coords(plan)
     slice_dict = create_slice_dict(corner_list)
     total = find_final_area(slice_dict)
@@ -10,14 +10,30 @@ def process_input(input_text):
 
 
 # Converts raw input strings into a list of individual instructions, where the distance has been converted to an int
-def get_plan_from_input(input_text):
+def get_plan_from_input(input_text, part2=False):
     plan = []
     # Create a list of processable lines from the whole input text
     # Convert the number characters to digits
     for row in input_text.splitlines():
         dir, dist, color = row.split(" ")
-        plan.append([dir, int(dist), color])
+        new_instr = None
+        if not part2:
+            new_instr = [dir, int(dist)]
+        else:
+            new_instr = convert_color_to_instruction(color)
+        plan.append(new_instr)
     return plan
+
+
+NUM_TO_DIR = {0: "R", 1: "D", 2: "L", 3: "U"}
+
+
+def convert_color_to_instruction(color):
+    dist_str = color[2:-2]
+    dist = int(dist_str, 16)
+    dir_int = int(color[-2:-1])
+    dir = NUM_TO_DIR[dir_int]
+    return [dir, dist]
 
 
 # Trace the route in the plan
@@ -36,7 +52,7 @@ def get_corner_coords(plan):
 
 # Add add or subtract along the appropriate axis to generate the next corner
 def find_corner(instruction, corners, x, y):
-    dir, dist, color = instruction
+    dir, dist = instruction
 
     offset = dist if (dir == "R" or dir == "U") else -dist
     # Note: input is guaranteed to begin at a corner, not in the middle of a line
@@ -50,7 +66,7 @@ def find_corner(instruction, corners, x, y):
 
 
 # Create a dictionary mapping all pairs of corners into a "slice" with key of its x index and value of the y1, y2 values of the pairs
-# In the end, the dict will contain only indices of x coords with slices, and each one will contain all slices at that index
+# In the end, the dict will contain as keys only indices of x coords, with the value being a list of all slices at that index
 def create_slice_dict(corner_list):
     dict = {}
     # Process corners a pair at a time, since they will always match up in a column
@@ -61,7 +77,7 @@ def create_slice_dict(corner_list):
     return dict
 
 
-# Given the dictionary of x locations and y slice definitions, find the area of the enclosed space
+# Given the dictionary of x axis locations of y axis slice definitions, find the area of the enclosed space
 def find_final_area(slice_dict: dict[int, list[tuple[int, int]]]) -> int:
     area_total = 0
     prior_idx = None
@@ -78,57 +94,25 @@ def find_final_area(slice_dict: dict[int, list[tuple[int, int]]]) -> int:
     return area_total
 
 
-# For this column at this x index, find the area of the prior mid section between slices, then find the new set of walls based on the current slices
-# Then can find the area of the new set of walls and determine the starting slices for the next portion of the map (not including parts that are not outside)
+# For this column at this index, find the area of the prior section between slices
+# Then find the new set of slices that will continue forward in the map from this point
+# Then can find the area of all the wall and internal area at the current index
 def process_index(x_idx, x_slices, prior_idx, prior_slices):
     new_area = 0
-    new_slices = []
 
-    new_area += calculate_middle_area(prior_slices, prior_idx, x_idx)
-    new_slices = calculate_next_slices(prior_slices, x_slices)
-    merged_slices = calculate_merged_slices(prior_slices, new_slices)
-    new_area += calculate_index_area(merged_slices)
+    mid_area = calculate_area_between_indices(prior_slices, prior_idx, x_idx)
+    new_area += mid_area
+    next_slices = generate_next_slices(prior_slices, x_slices)
+    merged_slices = merge_slices(prior_slices, next_slices)
+    column_area = calculate_column_area(merged_slices)
+    new_area += column_area
 
-    # merged_slices = merge_slices(prior_slices, x_slices)
-    # new_slices = calculate_next_slices(prior_slices, merged_slices)
-
-    #     X#####X
-    #     X###X #
-    #         # #
-    # X#######X #
-    # #   X#####X
-    # X###X
-    # 01234567890
-
-    # 5     X     X
-    # 4     X   X
-    # 3
-    # 2 X       X
-    # 1     X     X
-    # 0 X   X
-    #   01234567890
-    #           ^ 1
-    #
-    # x:4
-    # prior_slices = [(0, 2)]   x_slices = [(0, 1), (4, 5)]
-    #
-    # new_slices = [(1, 2), (4, 5)]
-    #
-    # x:8
-    # prior_slices = [(1, 2), (4, 5)]   x_slices = [(2, 4)]
-    #
-    # new_slices = [(1, 5)]
-    #
-    # x:10
-    # prior_slices = [(1, 5)]   x_slices = [(1, 5)]
-    #
-    # new_slices = []
-
-    return new_area, new_slices
+    return new_area, next_slices
 
 
-# Finding the area of the slices between the last index and this one.  Do not include the slices on either index.
-def calculate_middle_area(slice_list, prior_x_idx, scan_idx):
+# Finding the area of the slices between the last index and this one.
+# Do not include the columns at either index.
+def calculate_area_between_indices(slice_list, prior_x_idx, scan_idx):
     area = 0
     for slice in slice_list:
         s1, s2 = slice
@@ -141,7 +125,7 @@ def calculate_middle_area(slice_list, prior_x_idx, scan_idx):
 
 
 # Simple sum of the total heights of all the slices at this index (in the column)
-def calculate_index_area(slices):
+def calculate_column_area(slices):
     area = 0
     for slice in slices:
         y1, y2 = slice
@@ -149,154 +133,33 @@ def calculate_index_area(slices):
     return area
 
 
-# Find the overlap between the prior slices and the new merged slices to determine the indices of the new slices going forward
-# This will only add slices that represent being inside the loop
-# def calculate_next_slices(prior_slices, current_slices):
-#     # If we're not comparing against prior slices, the current slices will be the next ones
-#     if not prior_slices:
-#         return current_slices
-
-#     next_slices = []
-#     for prior in prior_slices:
-#         for current in current_slices:
-#             # Get the union of this pair of slices# TODO: WORK HERE!!!oving forward in the grid
-#             next_slices += get_slice_union(prior, current)
-#     return next_slices
-
-
-# prior_slices = [(0, 2)]   current_slices = [(0, 1), (4, 5)]
-#
-# new_slices = [(1, 2), (4, 5)]
-def calculate_next_slices(prior_slices, current_slices):
+def generate_next_slices(prior_slices, current_slices):
     new_slices = prior_slices
-    for slice in current_slices:
-        new_slices = calculate_new_slice_list(new_slices, slice)
+    for current in current_slices:
+        new_slices = next_slices_from_current(new_slices, current)
     return new_slices
 
 
-#         slices = [(0, 2)]   current = (0, 1)
-# result: new_slices = [(1, 2)]
-#
-#         slices = [(1, 2)]   current = (4, 5)
-# result: new_slices = [(1, 2), (4, 5)]
-#
-#         slices = [(1, 2), (4, 5)]   current = (2, 4)
-# result: new_slices = [(1, 5)]
-#
-#         slices = [(1, 5)]   current = [(1, 5)]
-# result: new_slices = []
-
-
-def calculate_new_slice_list(slices, current):
+def next_slices_from_current(slices, current):
     if not slices:
         return [current]
-    
+
     c1, c2 = current
-
-    # possible interactions of "current" with stuff in "slices":
-    # 1) insert a new slice somewhere, don't modify existing slices
-    #       - non overlapping, non-adjacent
-    # 2a) replace an existing slice because "current" is adjacent to it
-    # 2b) replace two existing slices because "current" is in the middle (adjacent needed?) or overlapping to both
-    # 3) modify one existing slice
-    #       - overlapping case (one end will be the same)
-    # 4) remove a slice where current matches exactly
-
-    #  (c1, c2)
-    #
-    #      0          1         2
-    # [ (p1, p2), (p1, p2), (p1, p2)]
-
-    # Case 2 - adjacent
-    #
-    # X
-    # #
-    # X#########X
-    #    X######X
-    #    #
-    #    X
-
-    # Case 2b
-    #
-    #  X
-    #  #
-    #  X#X
-    #    #
-    #  X#X
-    #  #
-    #  X
-    #
-
-    # Case ??
-    #
-    #  X
-    #  #
-    #  X#X
-    #    X### 2) merge this as a separate slice with the chunk below
-    #    X### 1) merge this with the bottom as an overlap
-    #  X#X
-    #  #
-    #  X
-    #
-
-    # Case 3 - overlapping
-    #
-    # X
-    # #
-    # X  X
-    #    #
-    #    #
-    #    X
-
     for idx, (p1, p2) in enumerate(slices):
 
-        # case 4) If these slices are exactly the same, then remove that slice
+        # If these slices are exactly the same, remove that slice
         if p1 == c1 and p2 == c2:
             return slices[:idx] + slices[idx + 1 :]
 
-        # case 1) where we insert before 'idx':
+        # If the current is below the prior slice, insert it before
         if c2 < p1 - 1:
             return slices[:idx] + [current] + slices[idx:]
 
-        # SKIP---> case 2a) where new slice is adjacent to (p1, p2)
-        # if c2 == (p1 - 1):
-        #     return
-
-        # # In the final case, just append this slice to the list
-        # if idx == len(slices) - 1:
-        #     return slices + [current]
-
         # If there's another slice to check, see if current will fill in between them
         if idx < len(slices) - 1:
-            # case 2b) where 'current' fills the gap between "idx" and "idx+1" slices:
             next_p1, next_p2 = slices[(idx + 1)]
             if p2 == c1 and c2 == next_p1:
                 return slices[:idx] + [(p1, next_p2)] + slices[(idx + 2) :]
-
-
-        # case 3) where 'current' overlaps one of the ends:
-        #
-        #          (c1, c2)
-        #     (p1, p2)       -> (p1, c2)
-        #
-        # c2 X        X
-        #    #
-        #    #
-        # c1 X X p2
-        #      #
-        #      X p1   X
-        #
-        # ---------------------------
-        #
-        #          (c1,      c2)
-        #          (p1, p2)       -> (p2, c2)
-        #
-        # c2 X        X
-        #    #
-        #    # X p2   X
-        # c1 X X p1
-        #
-        # ---------------------------
 
         # Check for current overlapping the top of prior
         if p2 == c1:
@@ -305,132 +168,52 @@ def calculate_new_slice_list(slices, current):
         # Check for current overlapping the bottom of prior
         if c2 == p1:
             return slices[:idx] + [(c1, p2)] + slices[idx + 1 :]
-        
+
         # Check for internal overlap with prior
         if c1 == p1:
-            return slices[:idx] + [(c2, p2)] + slices[idx + 1:]
+            return slices[:idx] + [(c2, p2)] + slices[idx + 1 :]
         if c2 == p2:
-            return slices[:idx] + [(p1, c1)] + slices[idx + 1:]
-            
+            return slices[:idx] + [(p1, c1)] + slices[idx + 1 :]
 
-    raise ValueError("WTF")
-    # return slices
+        # Check if we need to split into two new slices
+        if c1 > p1 and c2 < p2:
+            return slices[:idx] + [(p1, c1), (c2, p2)] + slices[idx + 1 :]
 
-
-# def get_slice_union(prior, current):
-#     # This should never be called with empty slices
-#     assert prior and current
-
-#     p1, p2 = prior
-#     c1, c2 = current
-
-#     # If these slices are exactly the same, then just return the new slice
-#     if p1 == c1 and p2 == c2:
-#         return [(c1, c2)]
-
-#     # If these slices are non-overlapping and non-adjacent, return both
-#     if p1 > c2 + 1 or p2 < c1 - 1:
-#         return [prior, current]
-
-#     # If they are adjacent, merge them
-#     if p1 == c2 + 1:
-#         return [(c1, p2)]
-
-#     if p2 == c1 - 1:
-#         return [(p1, c2)]
-
-#     # Otherwise, they are overlapping
-#     prior_h = p2 - p1
-#     current_h = c2 - c1
-#     diff = prior_h - current_h
-#     if p1 < c1:
-#         return [(p1, p1 + diff)]
-#     if p2 > c2:
-#         return [c2, c2 + diff]
-
-#     raise ValueError("Slice union broke!")
+    # If we get through all the slices and haven't inserted the current slice yet, add it to the end
+    return slices + [current]
 
 
-# TODO: brain this
 # From a list of slices, merge them all together to the minimum non-overlapping set
-def calculate_merged_slices(prior_slices, current_slices):
-    new_slices = prior_slices
-    for current in current_slices:
-        new_slices = merge_slice(new_slices, current)
-    return new_slices
+def merge_slices(prior_slices, current_slices):
+    # Combine the lists and then sort.
+    # Then compare each adjacent pair in the list to see if there's any overlap.
+    # The sorted list means that the lower bounds of each slice will be more than or equal to the slice before it
+    slices = prior_slices + current_slices
+    slices.sort()
 
-
-    # # merged_slices = []
-    # # current_slices = []
-    # # for unmerged in current_slices:
-    # #     print(f"{unmerged=}")
-    # #     if not merged_slices:
-    # #         current_slices = [unmerged]
-    # #     else:
-    # #         while merged_slices:
-    # #             merged = merged_slices.pop()
-    # #             print(f"{merged=}")
-    # #             print(f"Appending to {current_slices=}")
-    # #             current_slices += merge_slice_pair(unmerged, merged)
-    # #     print(f"Before apending new slices: {merged_slices=}")
-    # #     print(f"New slices to append: {current_slices=}")
-    # #     merged_slices += current_slices
-    # #     print(f"After appending: {merged_slices=}")
-    # #     current_slices.clear()
-    # return merged_slices
-
-
-# Given a pair of slices, find the new slice range if they overlap or the pair of slices if they don't
-def merge_slice(slices, current):
-    if not slices:
-        return [current]
-
-    c1, c2 = current
-    for idx, (p1, p2) in enumerate(slices):
-        # Additive cases
-        if p1 == c2:
-            return slices[:idx] + [(c1, p2)] + slices[idx + 1:]
-        if p2 == c1:
-            return slices[:idx] + [(p1, c2)] + slices[idx + 1:]
-
-        # Expansive case
-        if p1 == c1:
-            return slices[:idx] + [(p1, max(p2, c2))] + slices[idx + 1:]
-        if p2 == c2:
-            return slices[:idx] + [(min(p1, c1), c2)] + slices[idx + 1:]
-
-
-        # Non overlapping cases
-        if c2 < p1 or c1 > p2:
-            return slices + [(c1, c2)]
-
-        # All other cases create no change from the prior list of slices.
-        
+    i = 0
+    while i < len(slices) - 1:
+        p1, p2 = slices[i]
+        next_p1, next_p2 = slices[i + 1]
+        # If there's an overlap between these two slices, combine them.
+        # Since these slices are sorted, the lower bound will strictly increase
+        if next_p1 <= p2:
+            merged = (p1, max(p2, next_p2))
+            slices = slices[:i] + [merged] + slices[i + 2 :]
+        else:
+            i += 1
     return slices
 
 
 ########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-use_example = True
+use_example = False
 alt_input = ""
-# alt_input = "day18_ex2.txt"
-# alt_input = "day18_ex3.txt"
-part2 = False
+part2 = True
 import textwrap
 
 # Execute the script
 if __name__ == "__main__":
     input_text = lib.read_input(__file__, use_example, alt_input)
 
-    # input_text = textwrap.dedent(
-    #     """\
-    #     U 2 ()
-    #     R 1 ()
-    #     D 1 ()
-    #     R 1 ()
-    #     D 1 ()
-    #     L 2 ()
-    #     """
-    # )
-
-    answer = process_input(input_text)
+    answer = process_input(input_text, part2)
     print(answer)

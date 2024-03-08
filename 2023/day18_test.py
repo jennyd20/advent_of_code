@@ -10,19 +10,19 @@ import day18
 
 def test_calculate_one_slice_area():
     input = [(-2, 6)]
-    result = day18.calculate_index_area(input)
+    result = day18.calculate_column_area(input)
     assert result == 9
 
 
 def test_calculate_two_slice_areas():
     input = [(0, 2), (3, 4)]
-    result = day18.calculate_index_area(input)
+    result = day18.calculate_column_area(input)
     assert result == 5
 
 
 def test_calculate_four_slice_areas():
     input = [(0, 2), (4, 6), (8, 10), (10, 12)]
-    result = day18.calculate_index_area(input)
+    result = day18.calculate_column_area(input)
     assert result == 12
 
 
@@ -36,7 +36,7 @@ def test_calculate_four_slice_areas():
 #
 def test_calculate_prior_area_when_adjacent():
     input = [(0, 2)]
-    result = day18.calculate_middle_area(input, 0, 1)
+    result = day18.calculate_area_between_indices(input, 0, 1)
     assert result == 0
 
 
@@ -48,7 +48,7 @@ def test_calculate_prior_area_when_adjacent():
 #
 def test_calculate_prior_area_simple():
     input = [(0, 2)]
-    result = day18.calculate_middle_area(input, 0, 2)
+    result = day18.calculate_area_between_indices(input, 0, 2)
     assert result == 3
 
 
@@ -59,300 +59,112 @@ def test_calculate_prior_area_simple():
 
 def test_calculate_merged_pair_adding_above():
     prior_slices = [(0, 1)]
-    curent_slice = (-1, 0)
-    result = day18.merge_slice(prior_slices, curent_slice)
+    curent_slices = [(-1, 0)]
+    result = day18.merge_slices(prior_slices, curent_slices)
     expected = [(-1, 1)]
     assert sorted(result) == sorted(expected)
 
 
 def test_calculate_merged_pair_adding_below():
     prior_slices = [(0, 4)]
-    curent_slice = (-1, 0)
-    result = day18.merge_slice(prior_slices, curent_slice)
+    curent_slices = [(-1, 0)]
+    result = day18.merge_slices(prior_slices, curent_slices)
     expected = [(-1, 4)]
     assert sorted(result) == sorted(expected)
 
 
 def test_calculate_merged_pair_nonoverlapping():
     prior_slices = [(0, 1)]
-    curent_slice = (-3, -4)
-    result = day18.merge_slice(prior_slices, curent_slice)
+    curent_slices = [(-3, -4)]
+    result = day18.merge_slices(prior_slices, curent_slices)
     expected = [(-3, -4), (0, 1)]
     assert sorted(result) == sorted(expected)
 
 
-# def test_merge_slices_single():
-#     current_slices = [(-1, 1)]
-#     result = day18.calculate_merged_slices(current_slices)
-#     expected = [(-1, 1)]
-#     assert sorted(result) == sorted(expected)
+def test_merge_multiples_with_multiples():
+    prior_slices = [(-7, -5), (-2, 0)]
+    new_slices = [(-9, -5), (-2, 0)]
+    result = day18.merge_slices(prior_slices, new_slices)
+    expected = [(-9, -5), (-2, 0)]
+    assert sorted(result) == sorted(expected)
 
 
-# #
-# #    X   6
-# #    #
-# #    #
-# #    X   3
-# #
-# #  X    1
-# #  #
-# #  X   -1
-# #
-# def test_merge_slices_separated():
-#     current_slices = [(-1, 1), (3, 6)]
-#     result = day18.calculate_merged_slices(current_slices)
-#     expected = [(-1, 1), (3, 6)]
-#     assert sorted(result) == sorted(expected)
+def test_merge_two_into_three():
+    prior_slices = [(-86, 33), (69, 106), (113, 137)]
+    new_slices = [(-86, 33), (69, 106), (118, 130)]
+    result = day18.merge_slices(prior_slices, new_slices)
+    expected = [(-86, 33), (69, 106), (113, 137)]
+    assert result == expected
 
 
-# #
-# #  X   5
-# #  #
-# #  #
-# #  X  X  2
-# #     #
-# #     #
-# #     X  -1
-# #
-# def test_merge_slices_overlapping_bottom():
-#     current_slices = [(2, 5), (-1, 2)]
-#     result = day18.calculate_merged_slices(current_slices)
-#     expected = [(-1, 5)]
-#     assert sorted(result) == sorted(expected)
+def test_overlapping_merge():
+    prior_slices = [(168, 180), (187, 191)]
+    new_slices = [(168, 196)]
+    result = day18.merge_slices(prior_slices, new_slices)
+    assert result == [(168, 196)]
 
 
-# #
-# #     X  22
-# #     #
-# #     #
-# #  X  X  19
-# #  #
-# #  #
-# #  X  16
-# #
-# def test_merge_slices_overlapping_top():
-#     current_slices = [(16, 19), (19, 22)]
-#     result = day18.calculate_merged_slices(current_slices)
-#     expected = [(16, 22)]
-#     assert sorted(result) == sorted(expected)
+####################################################
+# TESTING COLOR TO INSTRUCTION
+####################################################
 
 
-# ####################################################
-# # TESTING CREATING NEW SLICES
-# ####################################################
-
-# def test_get_slice_union_one_input():
-#     prior_slice = ()
-#     current_slice = (0, 1)
-#     with pytest.raises(AssertionError):
-#         day18.get_slice_union(prior_slice, current_slice)
+def test_convert_color_to_instruction_simple():
+    color = "(#8ceee2)"
+    dir, dist = day18.convert_color_to_instruction(color)
+    assert dist == 577262
+    assert dir == "L"
 
 
-# def test_get_slice_union_not_overlapping():
-#     prior_slice = (0, 1)
-#     current_slice = (3, 5)
-#     result = day18.get_slice_union(prior_slice, current_slice)
-#     expected = [(0, 1), (3, 5)]
-#     assert result == expected
+def test_get_plan_part_2():
+    input = textwrap.dedent(
+        """\
+        X X (#000032)
+        """
+    )
+    result = day18.get_plan_from_input(input, True)
+    expected = [["L", 3]]
+    assert result == expected
 
 
-# def test_get_slice_union_overlapping():
-#     prior_slice = (0, 3)
-#     current_slice = (2, 3)
-#     result = day18.get_slice_union(prior_slice, current_slice)
-#     expected = [(2, 3)]
-#     assert result == expected
+def test_testinput_plan_part_2():
+    input = textwrap.dedent(
+        """\
+        X X (#70c710)
+        X X (#0dc571)
+        X X (#5713f0)
+        X X (#d2c081)
+        X X (#59c680)
+        X X (#411b91)
+        X X (#8ceee2)
+        X X (#caa173)
+        X X (#1b58a2)
+        X X (#caa171)
+        X X (#7807d2)
+        X X (#a77fa3)
+        X X (#015232)
+        X X (#7a21e3)
+        """
+    )
+    result = day18.get_plan_from_input(input, True)
+    expected = [
+        ["R", 461937],
+        ["D", 56407],
+        ["R", 356671],
+        ["D", 863240],
+        ["R", 367720],
+        ["D", 266681],
+        ["L", 577262],
+        ["U", 829975],
+        ["L", 112010],
+        ["D", 829975],
+        ["L", 491645],
+        ["U", 686074],
+        ["L", 5411],
+        ["U", 500254],
+    ]
+    assert result == expected
 
-# def test_calculate_new_slices_single_input():
-#     prior_slices = []
-#     new_slices = [(0, 1)]
-#     result = day18.calculate_next_slices(prior_slices, new_slices)
-#     expected = [(0, 1)]
-#     assert result == expected
-
-# def test_calculate_new_slices_non_overlapping():
-#     prior_slices = [(3, 4)]
-#     new_slices = [(0, 1)]
-#     result = day18.calculate_next_slices(prior_slices, new_slices)
-#     expected = [(0, 1), (3, 4)]
-#     assert result == expected
-
-
-# ####################################################
-# # TESTING PROCESS SLICE
-# ####################################################
-
-
-# #
-# #  X
-# #  #
-# #  X
-# #
-# def test_initial_process_slice():
-#     x_idx = -1
-#     x_slices = [(0, 2)]
-#     prior_idx = 0
-#     prior_slices = []
-#     new_area, new_slices = day18.process_slices(x_idx, x_slices, prior_idx, prior_slices)
-#     assert new_area == 3
-#     assert new_slices == [(0, 2)]
-
-
-# #
-# #  X#X  2
-# #  #.#
-# #  X#X  0
-# #
-# #  0 2
-# #
-
-# def test_second_idx_process_slices():
-#     x_idx = 2
-#     x_slices = [(0, 2)]
-#     prior_idx = 0
-#     prior_slices = [(0, 2)]
-#     new_area, new_slices = day18.process_slices(x_idx, x_slices, prior_idx, prior_slices)
-#     assert new_area == 6
-#     assert new_slices == [(0, 2)]
-
-
-# ####################################################
-# # WARNING: UNSORTED MESS BELOW
-# ####################################################
-
-# """
-# X
-# #
-# X
-
-# """
-
-# def test_initial_single_process_slices():
-#     x_idx = -1
-#     x_slices = [(0, 2)]
-#     prior_idx = 0
-#     prior_slices = []
-#     new_area, new_slices = day18.process_slices(x_idx, x_slices, prior_idx, prior_slices)
-#     assert new_area == 3
-#     assert new_slices == [(0, 2)]
-
-
-# """
-# X#X
-# #.#
-# X#X
-
-# """
-
-# def test_second_single_process_slices():
-#     x_idx = 2
-#     x_slices = [(0, 2)]
-#     prior_idx = 0
-#     prior_slices = [(0, 2)]
-#     new_area, new_slices = day18.process_slices(x_idx, x_slices, prior_idx, prior_slices)
-#     assert new_area == 6
-#     assert new_slices == [(0, 2)]
-
-
-# """
-
-# ###X   1
-# ...#   0
-# ...#  -1
-# ..XX  -2
-# ..#   -3
-# ##X   -4
-#   ^
-
-# """
-
-
-# def test_calculate_prior_idx_slice_area_jigged_up():
-#     input = [(-4, -2)]
-#     result = day18.calculate_prior_idx_slice_area(input, -4, 1)
-#     assert result == 6map
-
-
-# """
-
-# X##  10
-# X##  9
-#   #
-# X##  7
-# #..
-# X##  5
-#   #
-# X##  3
-# #..
-# #..
-# X##  0
-
-# """
-
-
-# def test_calculate_prior_idx_slice_area_out_edges():
-#     input = [(0, 3), (5, 7), (9, 10)]
-#     result = day18.calculate_prior_idx_slice_area(input, 0, 10)
-#     assert result == 9
-
-
-# """
-
-#   ###  12
-# ###.   11
-# ....
-# ....
-# ###.   8
-#   #.   7
-#   ###  6
-# """
-
-
-# def test_calculate_prior_idx_slice_area_outie():
-#     input = [(6, 8), (11, 12)]
-#     result = day18.calculate_prior_idx_slice_area(input, 6, 12)
-#     assert result == 7
-
-# """
-
-# X### >>    4
-# X##X >>    3
-# ...#       2
-# ...#       1
-# X##X       0
-# #... >>   -1
-# X### >>   -2
-
-# -3 0
-
-# """
-
-# ####################################################
-# # TESTING PROCESS SLICE
-# ####################################################
-
-
-# ###X   1
-# ...#   0
-# ...#  -1
-# ..XX  -2
-# ..#   -3
-# ##X   -4
-#   ^
-
-# """
-
-
-# """
-
-# X##  10
-# X##  9
-#   #
-# X##  7
-# #..
-# X##  5
-#   #
-# X##  3
 
 ####################################################
 # TESTING FULL GRAPHS
@@ -365,7 +177,7 @@ X = corner
 . = interior position
 """
 
-####################################################
+
 """
 
 SX
@@ -388,7 +200,6 @@ def test_small_square():
     assert total == 4
 
 
-####################################################
 """
 
 X#X
@@ -412,7 +223,6 @@ def test_big_square():
     assert total == 9
 
 
-####################################################
 """
 
 X##X
@@ -437,7 +247,6 @@ def test_bigger_square():
     assert total == 16
 
 
-####################################################
 """
 
 SX
@@ -461,7 +270,6 @@ def test_small_rectangle():
     assert total == 6
 
 
-####################################################
 """
 
 X###S
@@ -485,7 +293,6 @@ def test_big_rectangle():
     assert total == 15
 
 
-####################################################
 """
 
 S###X   0
@@ -514,7 +321,6 @@ def test_bigger_rectangle():
     assert total == 30
 
 
-####################################################
 """
 Start on right corner, go clockwise around
 
@@ -552,6 +358,8 @@ def test_simple_zig_bottom_right():
  X###X  -2
 
 """
+
+
 def test_larger_zig_bottom_right():
     # Start mid right, clockwise
     input = textwrap.dedent(
@@ -568,13 +376,66 @@ def test_larger_zig_bottom_right():
     assert total == 19
 
 
+"""
+ X###X
+ #...#
+ X#X #
+   # #
+   X#X
+
+"""
+
+
+def test_zig_top_left():
+    # Start mid right, clockwise
+    input = textwrap.dedent(
+        """\
+        U 2 ()
+        R 4 ()
+        D 4 ()
+        L 2 ()
+        U 2 ()
+        L 2 ()
+        """
+    )
+    total = day18.process_input(input)
+    assert total == 21
+
+
+"""
+   X#X
+   #.#
+ X#X #
+ #   #
+ X###X
+
+"""
+
+
+def test_zig_bottom_left():
+    # Start mid right, clockwise
+    input = textwrap.dedent(
+        """\
+        U 2 ()
+        R 2 ()
+        U 2 ()
+        R 2 ()
+        D 4 ()
+        L 4 ()
+        """
+    )
+    total = day18.process_input(input)
+    assert total == 21
+
+
 def test_calculate_next_slices():
     prior_slices = [(-2, 1)]
     current_slices = [(0, 1)]
     expected = [(-2, 0)]
-    result = day18.calculate_next_slices(prior_slices, current_slices)
+    result = day18.generate_next_slices(prior_slices, current_slices)
     assert result == expected
-####################################################
+
+
 """
 
   XX  2
@@ -602,71 +463,233 @@ def test_simple_zig_left():
     assert total == 8
 
 
+"""
+
+
+X###X
+#   #
+X#X #
+  # #
+  # #
+X#X #
+#   #
+S###X
+
+"""
+
+
+def test_u_left():
+    # Start mid right, clockwise
+    input = textwrap.dedent(
+        """\
+        R 4 ()
+        U 7 ()
+        L 4 ()
+        D 2 ()
+        R 2 ()
+        D 3 ()
+        L 2 ()
+        D 2 ()
+        """
+    )
+    total = day18.process_input(input)
+    assert total == 36
+
+
+"""
+
+
+X###X
+#   #
+# X#X
+# #
+# X#X
+#   #
+S###X
+
+"""
+
+
+def test_u_right_side():
+    # Start mid right, clockwise
+    input = textwrap.dedent(
+        """\
+        U 6 ()
+        R 4 ()
+        C 2 ()
+        L 2 ()
+        D 2 ()
+        R 2 ()
+        D 2 ()
+        L 4 ()
+        """
+    )
+    total = day18.process_input(input)
+    assert total == 33
+
+
+"""
+
+   X#X
+   # #
+ X#X #
+ #   #
+ X#X #
+   # #
+   X#X
+
+area = 6*2 + 15 = 27
+"""
+
+
+def test_simple_outie_left():
+    # Start mid right, clockwise
+    input = textwrap.dedent(
+        """\
+        R 2 ()
+        U 2 ()
+        R 2 ()
+        D 6 ()
+        L 2 ()
+        U 2 ()
+        L 2 ()
+        U 2 ()
+        """
+    )
+    total = day18.process_input(input)
+    assert total == 27
+
+
+"""
+
+    X###X
+    #   #
+ S##X   #
+ #      #
+ #      #
+ X##X   #
+    x###x
+
+area = 8*7 - 9 = 47
+"""
+
+
+def test_complex_outie_left():
+    # Start mid right, clockwise
+    input = textwrap.dedent(
+        """\
+        R 3 ()
+        U 2 ()
+        R 4 ()
+        D 6 ()
+        L 4 ()
+        U 1 ()
+        L 3 ()
+        U 3 ()
+        """
+    )
+    total = day18.process_input(input)
+    assert total == 47
+
+
+"""
+
+   X#X
+   # #
+   # X#X
+   #   #
+   # X#X
+   # #
+   X#X
+
+area = 6*2 + 15 = 27
+"""
+
+
+def test_simple_outie_right():
+    input = textwrap.dedent(
+        """\
+        R 2 ()
+        U 2 ()
+        R 2 ()
+        D 6 ()
+        L 2 ()
+        U 2 ()
+        L 2 ()
+        U 2 ()
+        """
+    )
+    total = day18.process_input(input)
+    assert total == 27
+
+
+"""
+
+      X#####X  10
+      #     #  9
+      X##X  #  8
+         #  #  7
+  X###X  #  #  6
+  #   #  #  #  5
+  # X#X  #  #  4
+  # #    #  #  3
+  # X####X  #  2
+  #         #  1
+  X#########X  0
+
+  0 2 4  7  10
+
+  Total area
+  0: 7
+    * Mid = 0
+    * Column = 7
+  2: +14 = 21
+    * Mid = 7
+    * Column = 7
+  4: +15 = 36
+    * Mid = 6
+    * Column = 9
+  7: + 23 = 59
+    * Mid = 12
+    * Column = 11
+  10: + 33 = 92
+    * Mid = 2 x 11 = 22
+    * Column = 11
+
+"""
+
+
+def test_spiral():
+    input = textwrap.dedent(
+        """\
+        U 6 ()
+        R 4 ()
+        D 2 ()
+        L 2 ()
+        D 2 ()
+        R 5 ()
+        U 6 ()
+        L 3 ()
+        U 2 ()
+        R 6 ()
+        D 10 ()
+        L 10 ()
+        """
+    )
+    total = day18.process_input(input)
+    assert total == 92
+
+
+def test_ending_slice_with_starting_with_middle():
+    prior_slices = [(0, 2), (4, 6)]
+    current_slices = [(4, 6), (8, 10)]
+    new_slices = day18.generate_next_slices(prior_slices, current_slices)
+    assert new_slices == [(0, 2), (8, 10)]
+    merged_slices = day18.merge_slices(prior_slices, new_slices)
+    assert merged_slices == [(0, 2), (4, 6), (8, 10)]
+
+
 ####################################################
-
-# """
-
-
-# X###X
-# X#X #
-#   # #
-#   # #
-# X#X #
-# S###X
-
-# """
-
-
-# def test_u_zig_left():
-#     # Start mid right, clockwise
-#     input = textwrap.dedent(
-#         """\
-#         R 4 ()
-#         U 5 ()
-#         L 4 ()
-#         D 1 ()
-#         R 2 ()
-#         D 3 ()
-#         L 2 ()
-#         D 1 ()
-#         """
-#     )
-#     total, map = day18.process_input(input)
-#     assert total == 26
-
-
-# ####################################################
-
-# """
-
-#     X###X
-#     #   #
-#  S##X   #
-#  #      #
-#  #      #
-#  X##X   #
-#     x###x
-
-# area = 8*7 - 9 = 47
-# """
-
-
-# def test_outie_left():
-#     # Start mid right, clockwise
-#     input = textwrap.dedent(
-#         """\
-#         R 3 ()
-#         U 2 ()
-#         R 4 ()
-#         D 6 ()
-#         L 4 ()
-#         U 1 ()
-#         L 3 ()
-#         U 3 ()
-#         """
-#     )
-#     total, map = day18.process_input(input)
-#     assert total == 47
 
 
 if __name__ == "__main__":
