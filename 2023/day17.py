@@ -132,9 +132,11 @@ def create_map(input_list):
 
 
 ########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-use_example = False
+use_example = True
 part2 = True
 file = ""#"day17_ex2.txt"
+
+# Note: part 2 on input takes a while to run!
 
 STRAIGHT_DISTANCE_MIN = 4 if part2 else 0
 STRAIGHT_DISTANCE_MAX = 10 if part2 else 3
