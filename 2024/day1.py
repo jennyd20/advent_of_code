@@ -1,14 +1,15 @@
 import lib
+import collections
 
 
 def process_input(input):
     # Create two lists from the input
     list_a = []
     list_b = []
-    for line in input.split("\n"):
+    for line in input.splitlines():
         n = line.split()
-        list_a.append(n[0])
-        list_b.append(n[1])
+        list_a.append(int(n[0]))
+        list_b.append(int(n[1]))
 
     if part1:
         return calculate_list_distance(list_a, list_b)
@@ -17,27 +18,45 @@ def process_input(input):
 
 
 def calculate_list_distance(list_a, list_b):
-    list_a.sort()
-    list_b.sort()
     list_dist = 0
-    for i in range(len(list_a)):
-        list_dist += abs(int(list_a[i]) - int(list_b[i]))
+    ### Jenny's original
+    # list_a.sort()
+    # list_b.sort()
+    # list_dist = 0
+    # for i in range(len(list_a)):
+    #     list_dist += abs(int(list_a[i]) - int(list_b[i]))
+
+    ### Girts' contribution
+    for a, b in zip(sorted(list_a), sorted(list_b)):
+        list_dist += abs(a - b)
+
     return list_dist
+
 
 def calculate_similarity_score(list_a, list_b):
     sim_score = 0
-    # Can make this smarter using a dictionary or somesuch, so I'm not counting duplicate numbers multiple times.
+    ### Jenny's original
+    # # Can make this smarter using a dictionary or somesuch, so I'm not counting duplicate numbers multiple times.
+    # for i in list_a:
+    #     b_count = list_b.count(i)
+    #     sim_score += int(i) * int(b_count)
+
+    ### Girts' contribution
+
+    counts = collections.defaultdict(int)
+    for b in list_b:
+        counts[b] += 1
     for i in list_a:
-        b_count = list_b.count(i)
-        sim_score += int(i) * int(b_count)
+        sim_score += i * counts[i]
     return sim_score
 
+
 ########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-part1 = False
-use_example = False
+part1 = True
 
 # Execute the script
 if __name__ == "__main__":
+    use_example = False
     input_text = lib.read_input(__file__, use_example)
 
     answer = process_input(input_text)
