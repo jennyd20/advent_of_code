@@ -1,6 +1,3 @@
-from numpy import true_divide
-
-
 def process_input(input, dampener_val=0):
     # Create list of reports (each input line is a report)
     # Each report is a list of numbers
@@ -44,10 +41,17 @@ def is_safe(report, dampener_val=0):
             if (inc and diff < 0) or (not inc and diff > 0):
                 failure = True
 
+        ####################################################
+        # Alternative, probably less complicated solution:
+        # In case of an error, then just iterate through the
+        # whole report taking one element out at a time
+        # starting with the first.
+        ####################################################
+
         # In the case of failure, see if there's any tolerance remaining
         if failure:
             if dampener_val > 0:
-                print(f"\nUsing dampener on report {report}")
+                # print(f"\nUsing dampener on report {report}")
                 dampener_val -= 1
                 failure = False
 
@@ -55,18 +59,18 @@ def is_safe(report, dampener_val=0):
                 if i <= 2:
                     if is_safe(report[1:], dampener_val):
                         return True
-                
+
                 # General case - remove the level that we're at and try again with decreased dampener
                 # Note: Don't advance lev_1 if we're going to skip lev_2
 
-                print(f"Removed: {lev_2}")
+                # print(f"Removed: {lev_2}")
                 # Test again with this value removed
-                new_report = report[:i - 1] + report[i:]
+                new_report = report[: i - 1] + report[i:]
                 if is_safe(new_report, dampener_val):
                     return True
 
                 continue
-            print(f"{report}, false")
+            # print(f"{report}, false")
             return False
 
         # Increment the lev_1 counter for the next set of comparisons
@@ -78,15 +82,18 @@ def is_safe(report, dampener_val=0):
 
 
 ########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-import lib
-
-# Part 1, dampener = 0
-# Part 2, dampener = 1
-dampener_val = 1
-use_example = False
+# None
 
 # Execute the script
+from aoc_libs import lib
+
 if __name__ == "__main__":
+
+    # Part 1, dampener = 0
+    # Part 2, dampener = 1
+    dampener_val = 1
+    use_example = False
+
     input_text = lib.read_input(__file__, use_example)
 
     answer = process_input(input_text, dampener_val)

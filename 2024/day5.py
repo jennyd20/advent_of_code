@@ -84,12 +84,12 @@ def _generate_list(rule_map):
 
 
 ########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-import lib
-
 part1 = False
 use_example = False
 
 # Execute the script
+from aoc_libs import lib
+
 if __name__ == "__main__":
     input_text = lib.read_input(__file__, use_example)
     answer = process_input(input_text)

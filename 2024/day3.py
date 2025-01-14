@@ -20,17 +20,16 @@ def process_input(input):
 
 
 ########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-import lib
-
 part2 = True
 
-
 # Execute the script
+from aoc_libs import lib
+
 if __name__ == "__main__":
     use_example = False
-    #day3_2_ex = "day3_2_ex.txt"
+    # day3_2_ex = "day3_2_ex.txt"
     input_text = lib.read_input(__file__, use_example)
-    #input_text = lib.read_input(__file__, alt_input=day3_2_ex)
+    # input_text = lib.read_input(__file__, alt_input=day3_2_ex)
 
     answer = process_input(input_text)
     print(answer)

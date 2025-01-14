@@ -1,4 +1,3 @@
-import lib
 import collections
 
 
@@ -55,6 +54,8 @@ def calculate_similarity_score(list_a, list_b):
 part1 = True
 
 # Execute the script
+from aoc_libs import lib
+
 if __name__ == "__main__":
     use_example = False
     input_text = lib.read_input(__file__, use_example)
