@@ -2,17 +2,17 @@ from aoc_libs import grid as grid_lib
 
 
 def process_input(input):
-    grid = grid_lib.Grid(input)
+    grid = grid_lib.Grid.create_from_input(input)
 
     word_count = 0
 
-    for pos in grid.all_pos():
+    for pos in grid.all_grid_pos_iter():
         # For every character in the grid, check to see if there's the word search XMAS in all 8 directions
         if part1:
             # Only start searching the grid if the first letter is correct
             if grid.get_val(pos) == SEARCH_WORD[0]:
                 # print(f"\nFirst letter matches at {pos=}")
-                for dir in grid.dir_list():
+                for dir in grid_lib.DIR:
                     if check_for_word(grid, pos, dir):
                         word_count += 1
 
@@ -27,10 +27,10 @@ def process_input(input):
 
 def check_for_word(grid, start_pos, dir):
     # Verified the first letter already, so start traveling along dir to start
-    pos = start_pos.duplicate()
+    pos = start_pos
     for c in SEARCH_WORD[1:]:
         # print(f"Checking for {c}")
-        pos.go_dir(dir)
+        pos = pos.go_dir(dir)
         if pos.out_of_bounds(grid):
             # print(f"Out of bounds at {pos=}")
             return False
@@ -47,11 +47,11 @@ def check_for_x(grid, start_pos):
     # print(f"\nChecking at center {row=}, {col=}")
     # Each pair of directions has to be either M or S, but not two of one: (nw, se) and (ne, sw)
 
-    for diag_pair in grid.get_diag_pairs():
+    for diag_pair in grid_lib.DIR_DIAG_PAIRS:
         used_m = False
         used_s = False
         for diag_dir in diag_pair:
-            pos = start_pos.duplicate().go_dir(diag_dir)
+            pos = start_pos.go_dir(diag_dir)
             if pos.out_of_bounds(grid):
                 return False
             # print(f"Checking corner in dir {p}")
@@ -70,7 +70,7 @@ def check_for_x(grid, start_pos):
 ########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
 SEARCH_WORD = "XMAS"
 part1 = False
-use_example = True
+use_example = False
 
 # Execute the script
 from aoc_libs import lib
