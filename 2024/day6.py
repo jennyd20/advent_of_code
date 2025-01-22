@@ -5,7 +5,7 @@ def process_input(input):
     map = grid_lib.Grid.create_from_input(input)
 
     # Get initial guard position
-    guard_pos = map.find_first_val("^")
+    guard_pos = map.get_first_val("^")
     guard_pos_dir = grid_lib.PositionAndDirection(guard_pos, grid_lib.Dir.N)
 
     # Change the guard's starting position element, so we can cross over it in the future

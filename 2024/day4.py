@@ -6,7 +6,7 @@ def process_input(input):
 
     word_count = 0
 
-    for pos in grid.all_grid_pos_iter():
+    for pos in grid.all_pos_iter():
         # For every character in the grid, check to see if there's the word search XMAS in all 8 directions
         if part1:
             # Only start searching the grid if the first letter is correct

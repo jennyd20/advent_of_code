@@ -1,7 +1,6 @@
 from __future__ import annotations
 import enum
 import dataclasses
-from warnings import deprecated
 
 
 class Dir(enum.Enum):
@@ -58,24 +57,43 @@ class Grid:
         new_row = new_row[: pos.col] + val + new_row[pos.col + 1 :]
         self.items[pos.row] = new_row
 
-    def find_first_val(self, val) -> Position:
-        for p in self.all_grid_pos_iter():
+    def get_all_val_pos(self, val) -> set[Position]:
+        pos = set()
+        for p in self.all_pos_iter():
+            if val == self.get_val(p):
+                pos.add(p)
+        return pos
+
+    def set_all_val_pos(self, val, pos: set[Position]):
+        for p in pos:
+            self.set_val(p, val)
+
+    def get_first_val(self, val) -> Position:
+        for p in self.all_pos_iter():
             if val == self.get_val(p):
                 return p
         raise ValueError(f"Value {val} not found in the grid")
 
-    @deprecated("Use _iter")
-    def all_grid_pos(self):
-        all_p = []
-        for row in range(self.max_rows):
-            for col in range(self.max_cols):
-                all_p.append(Position(row, col))
-        return all_p
+    def get_unique_vals(self) -> set[str]:
+        return set(self.get_val(p) for p in self.all_pos_iter())
 
-    def all_grid_pos_iter(self):
+    def to_dict(self) -> dict[str, set[Position]]:
+        all_vals = {}
+        for p in self.all_pos_iter():
+            v = self.get_val(p)
+            val_pos = all_vals.get(v, set())
+            val_pos.add(p)
+            all_vals[v] = val_pos
+        return all_vals
+
+    def all_pos_iter(self):
         for row in range(self.max_rows):
             for col in range(self.max_cols):
                 yield Position(row, col)
+
+    def print(self):
+        for row in self.items:
+            print(row)
 
 
 @dataclasses.dataclass(frozen=True)
