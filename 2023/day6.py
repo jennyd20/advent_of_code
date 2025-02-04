@@ -6,23 +6,30 @@ import operator
 def parse_input(input):
     # Return a list of the race [time, record]
     record = input.splitlines()
-    time_list = list(filter(None, record[0].split(" ")[1:]))
-    record_list = list(filter(None, record[1].split(" ")[1:]))
+    # time_list = list(filter(None, record[0].split(" ")[1:]))
+    # with list comprehensions:
+    time_list = [x for x record[0].split(" ")[1:] if x]
+    # alternatively with re:
+    #   re.split(r"\s+", a.split(':')[1].strip())
+    # record_list = list(filter(None, record[1].split(" ")[1:]))
+    record_list = [x for x in record[1].split(" ")[1:] if x]
 
     races = []
     if part1:
-        for i in range(len(time_list)):
-            races.append([int(time_list[i]), int(record_list[i])])
+        # for i in range(len(time_list)):
+        #     races.append([int(time_list[i]), int(record_list[i])])
+        for t, r in zip(time_list, record_list):
+            races.append((int(t), int(r)))
         return races
     # Create one ginormous race
     else:
-        return [
-            [
-                int("".join([t for t in time_list])),
-                int("".join([r for r in record_list])),
-            ]
-        ]
-
+        # return [
+        #    [
+        #        int("".join([t for t in time_list])),
+        #        int("".join([r for r in record_list])),
+        #    ]
+        # ]
+        return [(int("".join(time_list)), int("".join(record_list))]
 
 def find_margin(race):
     time, record = race
