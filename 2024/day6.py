@@ -19,18 +19,25 @@ def process_input(input, part1):
         return len(guard_poses)
 
     else:
+        # Count the total number of places you can put an obstruction to form a loop
         total = 0
+        # print(f"Num of positions to check: {len(guard_poses)}")
+        # For every position the guard visits, try to put an obstacle in that spot.
         for pos in guard_poses:
+            # Literally change a position to an obstacle (#) on the map, then try to walk the guard
+            # print(f"Obstacle at {pos=}")
             map.set_val(pos, "#")
             path = walk_guard(map, guard_pos_dir)
             map.set_val(pos, ".")
             if not path:
-                # print(f"Successfully found a loop when placing a block at {new_block_pos}")
+                # print(f"Successfully found a loop when placing a block at {pos}")
                 total += 1
 
         return total
 
 
+# Walk the guard along the map from the given starting position
+# The guard walks in a straight line until it hits an obstacle - then it turns right.
 def walk_guard(
     map, guard_pos_dir: grid_lib.PositionAndDirection
 ) -> set[grid_lib.Position]:
@@ -71,4 +78,4 @@ def main(part1=True, use_example=False):
 
 
 if __name__ == "__main__":
-    print(main(part1=True, use_example=False))
+    print(main(part1=False, use_example=False))
