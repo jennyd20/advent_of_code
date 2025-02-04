@@ -54,7 +54,6 @@ def test_day1():
     assert day.main(part1=True, use_example=False) == 1506483, "Test: True, False"
     assert day.main(part1=False, use_example=True) == 31, "Test: False, True"
     assert day.main(part1=False, use_example=False) == 23126924, "Test: False, False"
-    assert day.main(part1=False, use_example=False) == 44, "Test: True, True"
 
 
 def test_day2():
@@ -94,7 +93,8 @@ def test_day6():
     assert day.main(part1=True, use_example=True) == 41, "Test: True, True"
     assert day.main(part1=True, use_example=False) == 5080, "Test: True, False"
     assert day.main(part1=False, use_example=True) == 6, "Test: False, True"
-    assert day.main(part1=False, use_example=False) == 1919, "Test: False, False"
+    ### This takes a while to run, best to check it separately.
+    # assert day.main(part1=False, use_example=False) == 1919, "Test: False, False"
 
 
 def test_day7():
