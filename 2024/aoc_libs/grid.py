@@ -33,14 +33,18 @@ DIR_DIAG_PAIRS = [(Dir.NW, Dir.SE), (Dir.NE, Dir.SW)]
 @dataclasses.dataclass
 class Grid:
     input: str
-    items: list[str]
+    items: list[list]
     max_rows: int
     max_cols: int
 
     @classmethod
-    def create_from_input(cls, input: str):
-        items = input.splitlines()
-        return cls(input, items, len(items), len(items[0]))
+    def create_from_input(cls, input: str, new_type: type = str):
+        rows = input.splitlines()
+        items = []
+        for r in rows:
+            row_to_list = [new_type(x) for x in r]
+            items.append(row_to_list)
+        return cls(input, items, len(rows), len(items))
 
     def __repr__(self):
         return f"Grid of size {self.max_rows}, {self.max_cols}"
@@ -54,7 +58,7 @@ class Grid:
         if pos.out_of_bounds(self):
             raise ValueError(f"Position {pos} out of bounds")
         new_row = self.items[pos.row]
-        new_row = new_row[: pos.col] + val + new_row[pos.col + 1 :]
+        new_row = new_row[: pos.col] + [val] + new_row[pos.col + 1 :]
         self.items[pos.row] = new_row
 
     def get_all_val_pos(self, val) -> set[Position]:
@@ -92,8 +96,10 @@ class Grid:
                 yield Position(row, col)
 
     def print(self):
+        print()
         for row in self.items:
-            print(row)
+            print("".join(row))
+        print()
 
 
 @dataclasses.dataclass(frozen=True)
@@ -101,6 +107,9 @@ class Position:
     row: int
     col: int
 
+    def __repr__(self):
+        return f"({self.row}, {self.col})"
+    
     def go_dir(self, dir: Dir) -> Position:
         dr, dc = dir.value
         return Position(self.row + dr, self.col + dc)
