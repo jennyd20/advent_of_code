@@ -24,8 +24,12 @@ from aoc_libs import lib
 
 
 def main(part1=True, use_example=False):
-    input_text = lib.read_input(__file__, use_example)
-    # input_text = lib.read_input(__file__, alt_input=day3_2_ex)
+    # Slightly weird inputs for using examples, since the problem uses
+    # two different example versions for part1 and part2.
+    if not part1 and use_example:
+        input_text = lib.read_input(__file__, alt_input="day3_2_ex.txt")
+    else:
+        input_text = lib.read_input(__file__, use_example)
     return process_input(input_text, part1)
 
 
