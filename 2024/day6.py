@@ -1,7 +1,7 @@
 from aoc_libs import grid as grid_lib
 
 
-def process_input(input):
+def process_input(input, part1):
     map = grid_lib.Grid.create_from_input(input)
 
     # Get initial guard position
@@ -61,14 +61,14 @@ def walk_guard(
     return {x.pos for x in guard_paths}
 
 
-########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-part1 = False
-use_example = True
-
-# Execute the script
+########### SCRIPT ARGUMENTS AND EXECUTION ###########
 from aoc_libs import lib
 
-if __name__ == "__main__":
+
+def main(part1=True, use_example=False):
     input_text = lib.read_input(__file__, use_example)
-    answer = process_input(input_text)
-    print(answer)
+    return process_input(input_text, part1)
+
+
+if __name__ == "__main__":
+    print(main(part1=True, use_example=False))

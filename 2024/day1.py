@@ -1,7 +1,7 @@
 import collections
 
 
-def process_input(input):
+def process_input(input, part1):
     # Create two lists from the input
     list_a = []
     list_b = []
@@ -50,15 +50,14 @@ def calculate_similarity_score(list_a, list_b):
     return sim_score
 
 
-########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-part1 = True
-
-# Execute the script
+########### SCRIPT ARGUMENTS AND EXECUTION ###########
 from aoc_libs import lib
 
-if __name__ == "__main__":
-    use_example = False
-    input_text = lib.read_input(__file__, use_example)
 
-    answer = process_input(input_text)
-    print(answer)
+def main(part1=True, use_example=False):
+    input_text = lib.read_input(__file__, use_example)
+    return process_input(input_text, part1)
+
+
+if __name__ == "__main__":
+    print(main(part1=True, use_example=False))

@@ -1,13 +1,13 @@
 import re
 
 
-def process_input(input):
+def process_input(input, part1):
     total = 0
 
     valid_muls_re = r"mul\((\d{1,3}),(\d{1,3})\)"
 
     # If in part 2, remove all the dont()->do() sections from the string
-    if part2:
+    if not part1:
         # (?s) -> make dot matches all, including newlines
         # Because of how the examples are set up, match both "don't" and "do_not_mul"
         strip_donts_re = r"(?s)(?:don't|do_not_mul\(\)).*?do\(\)"
@@ -19,17 +19,19 @@ def process_input(input):
     return total
 
 
-########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-part2 = True
-
-# Execute the script
+########### SCRIPT ARGUMENTS AND EXECUTION ###########
 from aoc_libs import lib
 
-if __name__ == "__main__":
-    use_example = False
-    # day3_2_ex = "day3_2_ex.txt"
+
+def main(part1=True, use_example=False):
     input_text = lib.read_input(__file__, use_example)
     # input_text = lib.read_input(__file__, alt_input=day3_2_ex)
+    return process_input(input_text, part1)
 
-    answer = process_input(input_text)
-    print(answer)
+
+if __name__ == "__main__":
+    # TODO: fix part1 = False, use_example=True
+    # Should be 48
+    # Is returning 161 (the part1 answer)
+
+    print(main(part1=False, use_example=True))

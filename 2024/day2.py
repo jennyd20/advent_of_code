@@ -81,20 +81,16 @@ def is_safe(report, dampener_val=0):
     return True
 
 
-########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-# None
-
-# Execute the script
+########### SCRIPT ARGUMENTS AND EXECUTION ###########
 from aoc_libs import lib
 
-if __name__ == "__main__":
 
-    # Part 1, dampener = 0
-    # Part 2, dampener = 1
-    dampener_val = 1
-    use_example = False
-
+def main(part1=True, use_example=False):
+    # Part 1, dampener = 0; part 2, dampener = 1
+    dampener_val = 0 if part1 else 1
     input_text = lib.read_input(__file__, use_example)
+    return process_input(input_text, dampener_val)
 
-    answer = process_input(input_text, dampener_val)
-    print(answer)
+
+if __name__ == "__main__":
+    print(main(part1=True, use_example=False))

@@ -34,7 +34,7 @@ def prettyprint(dq, pos_idx):
 
 
 ######################## MAIN LOGIC ########################
-def process_input(disk_map: str) -> int:
+def process_input(disk_map: str, part1: bool) -> int:
     checksum = 0
 
     # Convert the map to a deque of File and Space objects
@@ -58,7 +58,7 @@ def process_input(disk_map: str) -> int:
             # If there's a space, try to fill it in with file contents
             case Space(size):
                 # If the deque changes, go back through the list
-                if filled_space(disk_deque, left_block):
+                if filled_space(disk_deque, left_block, part1):
                     continue
 
                 # If the deque didn't change, this space can't be filled in.
@@ -73,7 +73,7 @@ def process_input(disk_map: str) -> int:
 # This deque already has the space we're processing popped off the front.
 # We will get the last file popped off the back shortly.
 def filled_space(
-    disk_deque: collections.deque[File | Space], space_block: Space
+    disk_deque: collections.deque[File | Space], space_block: Space, part1: bool
 ) -> bool:
 
     # If this particular block of space was previously occupied by a file,
@@ -182,14 +182,14 @@ def parse_map(disk_map: str) -> collections.deque[File | Space]:
     return disk_deque
 
 
-########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-part1 = False
-use_example = False
-
-# Execute the script
+########### SCRIPT ARGUMENTS AND EXECUTION ###########
 from aoc_libs import lib
 
-if __name__ == "__main__":
+
+def main(part1=True, use_example=False):
     input_text = lib.read_input(__file__, use_example)
-    answer = process_input(input_text)
-    print(answer)
+    return process_input(input_text, part1)
+
+
+if __name__ == "__main__":
+    print(main(part1=True, use_example=False))

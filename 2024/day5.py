@@ -1,4 +1,4 @@
-def process_input(input_text):
+def process_input(input_text, part1):
     # Split the input into rules and updates
     r, u = input_text.split("\n\n")
     rules = [x.split("|") for x in r.splitlines()]
@@ -83,14 +83,14 @@ def _generate_list(rule_map):
     return fixed_update
 
 
-########### SCRIPT ARGUMENTS AND GLOBAL VARIABLES ###########
-part1 = False
-use_example = False
-
-# Execute the script
+########### SCRIPT ARGUMENTS AND EXECUTION ###########
 from aoc_libs import lib
 
-if __name__ == "__main__":
+
+def main(part1=True, use_example=False):
     input_text = lib.read_input(__file__, use_example)
-    answer = process_input(input_text)
-    print(answer)
+    return process_input(input_text, part1)
+
+
+if __name__ == "__main__":
+    print(main(part1=True, use_example=False))
