@@ -9,6 +9,7 @@ import day6
 import day7
 import day8
 import day9
+import day10
 
 # import dataclasses
 
@@ -122,6 +123,15 @@ def test_day9():
     assert day.main(part1=False, use_example=True) == 2858, "Test: False, True"
     assert (
         day.main(part1=False, use_example=False) == 6413328569890
+    ), "Test: False, False"
+
+def test_day10():
+    day = day10
+    assert day.main(part1=True, use_example=True) == 36, "Test: True, True"
+    assert day.main(part1=True, use_example=False) == 611, "Test: True, False"
+    assert day.main(part1=False, use_example=True) == 81, "Test: False, True"
+    assert (
+        day.main(part1=False, use_example=False) == 1380
     ), "Test: False, False"
 
 
