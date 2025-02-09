@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections.abc import Callable
 import enum
 import dataclasses
 
@@ -31,25 +32,27 @@ DIR_DIAG_PAIRS = [(Dir.NW, Dir.SE), (Dir.NE, Dir.SW)]
 
 
 @dataclasses.dataclass
-class Grid:
+class Grid[T]:
     input: str
-    items: list[list]
+    items: list[list[T]]
     max_rows: int
     max_cols: int
 
     @classmethod
-    def create_from_input(cls, input: str, new_type: type = str):
+    def create_from_input(
+        cls, input: str, new_type: Callable[[str], T] = str
+    ) -> Grid[T]:
         rows = input.splitlines()
         items = []
         for r in rows:
             row_to_list = [new_type(x) for x in r]
             items.append(row_to_list)
-        return cls(input, items, len(rows), len(items))
+        return cls(input, items, len(rows), len(rows[0]))
 
     def __repr__(self):
         return f"Grid of size {self.max_rows}, {self.max_cols}"
 
-    def get_val(self, pos: Position) -> str:
+    def get_val(self, pos: Position) -> T:
         if pos.out_of_bounds(self):
             raise ValueError(f"Position {pos} out of bounds")
         return self.items[pos.row][pos.col]
@@ -61,7 +64,7 @@ class Grid:
         new_row = new_row[: pos.col] + [val] + new_row[pos.col + 1 :]
         self.items[pos.row] = new_row
 
-    def get_all_val_pos(self, val) -> set[Position]:
+    def get_all_val_pos(self, val:T) -> set[Position]:
         pos = set()
         for p in self.all_pos_iter():
             if val == self.get_val(p):
@@ -78,10 +81,10 @@ class Grid:
                 return p
         raise ValueError(f"Value {val} not found in the grid")
 
-    def get_unique_vals(self) -> set[str]:
+    def get_unique_vals(self) -> set[T]:
         return set(self.get_val(p) for p in self.all_pos_iter())
 
-    def to_dict(self) -> dict[str, set[Position]]:
+    def to_dict(self) -> dict[T, set[Position]]:
         all_vals = {}
         for p in self.all_pos_iter():
             v = self.get_val(p)
@@ -98,7 +101,7 @@ class Grid:
     def print(self):
         print()
         for row in self.items:
-            print("".join(row))
+            print("".join(str(x) for x in row))
         print()
 
 
@@ -109,7 +112,7 @@ class Position:
 
     def __repr__(self):
         return f"({self.row}, {self.col})"
-    
+
     def go_dir(self, dir: Dir) -> Position:
         dr, dc = dir.value
         return Position(self.row + dr, self.col + dc)
@@ -119,6 +122,14 @@ class Position:
 
     def out_of_bounds(self, grid) -> bool:
         return not self.in_bounds(grid)
+    
+    def get_orthog_pos(self, grid:Grid) -> set:
+        orthog_pos = set()
+        for d in DIR_ORTHOG:
+            new_pos = self.go_dir(d)
+            if new_pos.in_bounds(grid):
+                orthog_pos.add(new_pos)
+        return orthog_pos
 
 
 @dataclasses.dataclass(frozen=True)
