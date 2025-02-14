@@ -11,6 +11,7 @@ import day8
 import day9
 import day10
 import day11
+import day12
 
 # import dataclasses
 
@@ -126,14 +127,14 @@ def test_day9():
         day.main(part1=False, use_example=False) == 6413328569890
     ), "Test: False, False"
 
+
 def test_day10():
     day = day10
     assert day.main(part1=True, use_example=True) == 36, "Test: True, True"
     assert day.main(part1=True, use_example=False) == 611, "Test: True, False"
     assert day.main(part1=False, use_example=True) == 81, "Test: False, True"
-    assert (
-        day.main(part1=False, use_example=False) == 1380
-    ), "Test: False, False"
+    assert day.main(part1=False, use_example=False) == 1380, "Test: False, False"
+
 
 def test_day11():
     day = day11
@@ -142,6 +143,14 @@ def test_day11():
     assert (
         day.main(part1=False, use_example=False) == 221280540398419
     ), "Test: False, False"
+
+
+def test_day12():
+    day = day12
+    assert day.main(part1=True, use_example=True) == 1930, "Test: True, True"
+    assert day.main(part1=True, use_example=False) == 1396298, "Test: True, False"
+    assert day.main(part1=False, use_example=True) == 1206, "Test: False, True"
+    assert day.main(part1=False, use_example=False) == 853588, "Test: False, False"
 
 
 if __name__ == "__main__":
